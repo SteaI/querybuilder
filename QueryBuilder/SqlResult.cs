@@ -42,49 +42,43 @@ namespace SqlKata
             });
         }
 
-        private string ChangeToSqlValue(object value)
+        private static string ChangeToSqlValue(object value)
         {
-
-            if (value == null)
+            switch (value)
             {
-                return "NULL";
+                case null:
+                case DBNull _:
+                    return "NULL";
+
+                case string strValue:
+                    return $"'{EscapeSingleQuote(strValue)}'";
+
+                case DateTime date:
+                    if (date.Date == date)
+                        return $"'{date:yyyy-MM-dd}'";
+
+                    return $"'{date:yyyy-MM-dd HH:mm:ss}'";
+
+                case bool vBool:
+                    return vBool ? "true" : "false";
+
+                case Enum vEnum:
+                    return Convert.ToInt32(vEnum) + $" /* {vEnum} */";
+
+                case var v when Helper.IsArray(v):
+                    return Helper.JoinArray(",", value as IEnumerable);
+
+                case var v when NumberTypes.Contains(v.GetType()):
+                    return value.ToString();
+
+                default:
+                    return $"'{value}'";
             }
-
-            if (Helper.IsArray(value))
-            {
-                return Helper.JoinArray(",", value as IEnumerable);
-            }
-
-            if (NumberTypes.Contains(value.GetType()))
-            {
-                return value.ToString();
-            }
-
-            if (value is DateTime date)
-            {
-                if (date.Date == date)
-                {
-                    return "'" + date.ToString("yyyy-MM-dd") + "'";
-                }
-
-                return "'" + date.ToString("yyyy-MM-dd HH:mm:ss") + "'";
-            }
-
-            if (value is bool vBool)
-            {
-                return vBool ? "true" : "false";
-            }
-
-            if (value is Enum vEnum)
-            {
-                return Convert.ToInt32(vEnum) + $" /* {vEnum} */";
-            }
-
-            // fallback to string
-            return "'" + value.ToString() + "'";
         }
 
-
-
+        private static string EscapeSingleQuote(string value)
+        {
+            return value.Replace("'", "''");
+        }
     }
 }
