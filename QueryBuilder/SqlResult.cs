@@ -50,9 +50,6 @@ namespace SqlKata
                 case DBNull _:
                     return "NULL";
 
-                case string strValue:
-                    return $"'{EscapeSingleQuote(strValue)}'";
-
                 case DateTime date:
                     if (date.Date == date)
                         return $"'{date:yyyy-MM-dd}'";
@@ -72,7 +69,7 @@ namespace SqlKata
                     return value.ToString();
 
                 default:
-                    return $"'{value}'";
+                    return $"'{EscapeSingleQuote(value.ToString())}'";
             }
         }
 
